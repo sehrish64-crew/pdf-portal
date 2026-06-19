@@ -7,19 +7,21 @@ CREATE TABLE brands (
   name TEXT NOT NULL UNIQUE,
   slug TEXT NOT NULL UNIQUE,
   default_color TEXT DEFAULT '#3B82F6',
+  email TEXT,
+  website TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Insert default brands
-INSERT INTO brands (name, slug, default_color) VALUES
-  ('CarReaders', 'carreaders', '#3B82F6'),
-  ('VehicleHealthAnalysis', 'vehiclehealthanalysis', '#10B981'),
-  ('VehicleHealthEstimate', 'vehiclehealthestimate', '#F59E0B'),
-  ('CarBronze', 'carbronze', '#92400E'),
-  ('TrueAnalyzers', 'trueanalyzers', '#8B5CF6'),
-  ('TrueInspectify', 'trueinspectify', '#EC4899'),
-  ('TrueInfoProvider', 'trueinfoprovider', '#06B6D4'),
-  ('CarDefiner', 'cardefiner', '#EF4444');
+INSERT INTO brands (name, slug, default_color, email, website) VALUES
+  ('CarReaders', 'carreaders', '#3B82F6', 'info@carreaders.com', 'https://carreaders.com/'),
+  ('VehicleHealthAnalysis', 'vehiclehealthanalysis', '#10B981', 'info@vehiclehealthanalysis.com', 'https://vehiclehealthanalysis.com/'),
+  ('VehicleHealthEstimate', 'vehiclehealthestimate', '#F59E0B', 'info@vehiclehealthestimate.com', 'https://vehiclehealthestimate.com/'),
+  ('CarBronze', 'carbronze', '#92400E', 'info@carbronze.com', 'https://carbronze.com/'),
+  ('TrueAnalyzers', 'trueanalyzers', '#8B5CF6', 'info@trueanalyzers.com', 'https://trueanalyzers.com/'),
+  ('TrueInspectify', 'trueinspectify', '#EC4899', 'info@trueinspectify.com', 'https://trueinspectify.com/'),
+  ('TrueInfoProvider', 'trueinfoprovider', '#06B6D4', 'info@trueinfoprovider.com', 'https://trueinfoprovider.com/'),
+  ('CarDefiner', 'cardefiner', '#EF4444', 'info@cardefiner.com', 'https://cardefiner.com/');
 
 -- Create reports table
 CREATE TABLE reports (

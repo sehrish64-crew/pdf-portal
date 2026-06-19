@@ -9,6 +9,8 @@ export interface Brand {
   name: string;
   slug: string;
   default_color: string;
+  email?: string | null;
+  website?: string | null;
   created_at: string;
 }
 

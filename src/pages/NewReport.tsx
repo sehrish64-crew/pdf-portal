@@ -25,6 +25,8 @@ export function NewReport() {
   // Form fields
   const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [brandColor, setBrandColor] = useState('#3B82F6');
+  const [brandEmail, setBrandEmail] = useState('info@example.com');
+  const [brandWebsite, setBrandWebsite] = useState('https://example.com/');
   const [reportType, setReportType] = useState<ReportType>('VIN');
   const [packageType, setPackageType] = useState<PackageType>('Standard');
   const [logoUrl, setLogoUrl] = useState<string>('');
@@ -50,6 +52,8 @@ export function NewReport() {
       const brand = brands.find((b) => b.id === selectedBrand);
       if (brand) {
         setBrandColor(brand.default_color);
+        setBrandEmail(brand.email || 'info@example.com');
+        setBrandWebsite(brand.website || 'https://example.com/');
       }
     }
   }, [selectedBrand, brands]);
@@ -66,6 +70,8 @@ export function NewReport() {
       if (brandList.length > 0) {
         setSelectedBrand(brandList[0].id);
         setBrandColor(brandList[0].default_color);
+        setBrandEmail(brandList[0].email || 'info@example.com');
+        setBrandWebsite(brandList[0].website || 'https://example.com/');
       } else {
         setSelectedBrand('');
       }
@@ -105,6 +111,8 @@ export function NewReport() {
       const reportData = {
         securedBy: `Secured by ${brandName}`,
         tagline: 'One VIN. Complete History.',
+        email: brandEmail,
+        website: brandWebsite,
         marketValue: marketValue || '---',
         marketValueSummary: `Market value is estimated at ${marketValue || '---'} with a Clear / Valid MOT.`,
       };
