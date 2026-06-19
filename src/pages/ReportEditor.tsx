@@ -38,7 +38,7 @@ function E({
 function EToggle({ value, onChange, color }: { value: 'Equipped' | 'Not Equipped'; onChange: (v: 'Equipped' | 'Not Equipped') => void; color: string }) {
   const eq = value === 'Equipped';
   return (
-    <button onClick={() => onChange(eq ? 'Not Equipped' : 'Equipped')}
+    <button className="report-editor-print-toggle" onClick={() => onChange(eq ? 'Not Equipped' : 'Equipped')}
       style={{ 
         backgroundColor: eq ? color + '18' : '#f8fafc', 
         color: eq ? color : '#94a3b8', 
@@ -195,7 +195,7 @@ export function ReportEditor() {
   };
 
   if (loading || !report || !data) {
-    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 400 }}><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" /></div>;
+    return <div className="report-editor-page" style={{ minHeight: 400 }} />;
   }
 
   const C = report.brand_color;
@@ -221,12 +221,11 @@ export function ReportEditor() {
       <style>{`
         @page {
           size: A4 portrait;
-          margin: 0;
+          margin: 8mm 9mm 14mm 9mm;
         }
 
         @media print {
           html, body {
-            width: 210mm;
             margin: 0 !important;
             padding: 0 !important;
             background: #ffffff !important;
@@ -265,15 +264,26 @@ export function ReportEditor() {
           }
 
           .report-editor-page .report-editor-document {
-            width: 210mm !important;
-            max-width: 210mm !important;
+            width: auto !important;
+            max-width: calc(210mm - 18mm) !important;
             margin: 0 !important;
             border-radius: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            min-height: 297mm !important;
-            display: flex !important;
-            flex-direction: column !important;
+            min-height: auto !important;
+            display: block !important;
+          }
+
+          .report-editor-page .report-editor-document > .flex-1 {
+            display: block !important;
+            flex: none !important;
+            min-height: auto !important;
+            padding: 12px 14px 16px !important;
+            padding-bottom: 16px !important;
+          }
+
+          .report-editor-page .report-editor-document > .flex-1.space-y-8 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 12px !important;
           }
 
           .report-editor-page .report-editor-document,
@@ -286,26 +296,108 @@ export function ReportEditor() {
             outline: none !important;
           }
 
-          .report-editor-page .pdf-page-break {
-            break-before: page;
-            page-break-before: always;
-          }
-
-          .report-editor-page .report-editor-section,
-          .report-editor-page .report-editor-cover,
-          .report-editor-page .report-editor-footer,
-          .report-editor-page .report-editor-stat-grid {
-            page-break-inside: avoid;
-          }
-
+        
+          
           .report-editor-page .report-editor-document button {
             display: none !important;
           }
 
+          .report-editor-page .report-editor-document button.report-editor-print-toggle {
+            display: inline-flex !important;
+          }
+
           .report-editor-page .report-editor-footer {
-            margin-top: auto !important;
+            position: fixed !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            margin-top: 0 !important;
             break-inside: avoid;
             page-break-inside: avoid;
+            z-index: 10;
+          }
+
+          .report-editor-page .report-editor-section {
+            padding: 14px 16px !important;
+          }
+
+          .report-editor-page .report-editor-section-header {
+            margin-bottom: 12px !important;
+          }
+
+          .report-editor-page .report-editor-cover {
+            padding: 18px 20px 20px !important;
+          }
+
+          .report-editor-page .report-editor-stat-grid > div {
+            padding: 10px 6px !important;
+          }
+
+          .report-editor-page .report-editor-page-break-before {
+            break-before: page;
+            page-break-before: always;
+          }
+
+          .report-editor-page .report-editor-section > div[style*='margin-bottom: 22px'] {
+            margin-bottom: 10px !important;
+          }
+
+          .report-editor-page .report-editor-safety-grid > div {
+            padding-top: 8px !important;
+            padding-bottom: 8px !important;
+            align-items: center !important;
+          }
+
+          .report-editor-page .report-editor-safety-grid > div > span:first-child {
+            line-height: 1.2 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            min-width: 0 !important;
+          }
+
+          .report-editor-page button.report-editor-print-toggle {
+            min-width: 66px !important;
+            height: auto !important;
+            min-height: 18px !important;
+            padding: 2px 8px !important;
+            font-size: 9px !important;
+            line-height: 1.2 !important;
+          }
+
+          .report-editor-page .report-editor-two-col,
+          .report-editor-page .report-editor-legal-grid,
+          .report-editor-page .report-editor-engine-grid,
+          .report-editor-page .report-editor-fuel-grid,
+          .report-editor-page .report-editor-general-grid,
+          .report-editor-page .report-editor-core-grid,
+          .report-editor-page .report-editor-problem-grid,
+          .report-editor-page .report-editor-safety-grid,
+          .report-editor-page .report-editor-security-grid,
+          .report-editor-page .report-editor-mot-grid {
+            gap: 8px !important;
+          }
+
+          .report-editor-page .report-editor-problem-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .report-editor-page .report-editor-security-grid,
+          .report-editor-page .report-editor-mot-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .report-editor-page .report-editor-safety-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          }
+
+          .report-editor-page .report-editor-core-grid,
+          .report-editor-page .report-editor-engine-grid,
+          .report-editor-page .report-editor-fuel-grid,
+          .report-editor-page .report-editor-general-grid,
+          .report-editor-page .report-editor-legal-grid,
+          .report-editor-page .report-editor-two-col {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           }
         }
 
@@ -666,7 +758,7 @@ export function ReportEditor() {
           </div>
 
           {/* ══ LEGAL CHECKS ══ */}
-          <div className="report-editor-section pdf-page-break" style={{ ...sectionBox }}>
+          <div className="report-editor-section report-editor-page-break-before" style={{ ...sectionBox }}>
             <SectionHeader icon={Scale} title="Legal Checks" color={C} />
             <div className="report-editor-legal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
               {[
@@ -710,6 +802,7 @@ export function ReportEditor() {
                       </div>
                     ))}
                   </div>
+              
                   <div className="report-editor-mot-meta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ background: 'white', borderRadius: 8, padding: '8px 12px', border: '1px solid #e2e8f0', display: 'inline-flex', gap: 8, alignItems: 'center' }}>
                       <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Test Number</span>
@@ -717,6 +810,32 @@ export function ReportEditor() {
                         <E value={m.testNumber} onChange={(v) => updateMOT(idx, 'testNumber', v)} style={{ fontFamily: 'monospace', color: '#475569' }} />
                       </span>
                     </div>
+                  </div>
+                  <div style={{ background: 'white', borderRadius: 10, padding: '10px 12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', marginTop: 10, marginBottom: 10 }}>
+                    <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>Advisories:</div>
+                    <textarea
+                      value={m.advisorNote || ''}
+                      onChange={(e) => updateMOT(idx, 'advisorNote', e.target.value)}
+                      placeholder="Type advisories here"
+                      rows={3}
+                      style={{
+                        width: '100%',
+                        display: 'block',
+                        resize: 'vertical',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 8,
+                        padding: '10px 12px',
+                        fontSize: 13,
+                        color: '#1e293b',
+                        outline: 'none',
+                        background: '#fff',
+                        fontFamily: 'inherit',
+                        lineHeight: 1.5,
+                      }}
+                    />
+                  </div>
+                  <div className="report-editor-mot-meta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div />
                     <button className="no-print" onClick={() => setData({ ...data, motHistory: data.motHistory.filter((_, i) => i !== idx) })}
                       style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', borderRadius: 8, border: '1px solid #fecaca', color: '#ef4444', background: '#fff5f5', cursor: 'pointer', fontSize: 11, fontWeight: 600 }}>
                       <Trash2 size={12} /> Remove
@@ -724,7 +843,7 @@ export function ReportEditor() {
                   </div>
                 </div>
               ))}
-              <button className="no-print" onClick={() => setData({ ...data, motHistory: [...data.motHistory, { year: '', result: 'PASSED', dateOfTest: '', expiryDate: '', mileage: '', testNumber: '' }] })}
+              <button className="no-print" onClick={() => setData({ ...data, motHistory: [...data.motHistory, { year: '', result: 'PASSED', dateOfTest: '', expiryDate: '', mileage: '', testNumber: '', advisorNote: '' }] })}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 12, border: '2px dashed #e2e8f0', color: '#64748b', background: 'transparent', cursor: 'pointer', fontSize: 12, fontWeight: 600, width: '100%', transition: 'all 0.2s' }}>
                 <Plus size={14} /> Add MOT Record
               </button>
@@ -732,7 +851,7 @@ export function ReportEditor() {
           </div>
 
           {/* ══ CORE VEHICLE SPECS ══ */}
-          <div className="report-editor-section pdf-page-break" style={{ ...sectionBox }}>
+          <div className="report-editor-section report-editor-page-break-before" style={{ ...sectionBox }}>
             <SectionHeader icon={Car} title="Core Vehicle Specifications" color={C} />
             <div className="report-editor-core-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
               {([
@@ -773,9 +892,8 @@ export function ReportEditor() {
               </div>
             </div>
           </div>
-
           {/* ══ ENGINE & TRANSMISSION ══ */}
-          <div className="report-editor-section pdf-page-break" style={{ ...sectionBox }}>
+          <div className="report-editor-section report-editor-page-break-before" style={{ ...sectionBox }}>
             <SectionHeader icon={Cog} title="Engine & Transmission Technical Details" color={C} />
             <div className="report-editor-engine-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
               {([
@@ -821,7 +939,7 @@ export function ReportEditor() {
           </div>
 
           {/* ══ TITLE BRAND & PROBLEM CHECKS ══ */}
-          <div className="report-editor-section pdf-page-break" style={{ ...sectionBox }}>
+          <div className="report-editor-section" style={{ ...sectionBox }}>
             <SectionHeader icon={Tag} title="Title Brand & Problem Checks (Comprehensive)" color={C} />
 
             {[
@@ -831,7 +949,11 @@ export function ReportEditor() {
               { title: 'Safety & Defect Checks', items: [['Manufacturer Buy Back','manufacturerBuyBack'],['Salvage / Stolen','salvageStolen'],['Crushed','crushed'],['Inoperable Vehicle','inoperableVehicle'],['Hazardous','hazardous'],['Export Only Vehicle','exportOnlyVehicle'],['Odometer Tampering','odometerTampering'],['Gray Market','grayMarket']] },
               { title: 'Odometer & Discrepancy Checks', items: [['Odometer Exceeds Limits','odometerExceedsLimits'],['Odometer Altered','odometerAltered'],['Odometer Replaced','odometerReplaced'],['Odometer Discrepancy','odometerDiscrepancy'],['Pending Junk','pendingJunk'],['Junk Automobile','junkAutomobile']] },
             ].map(({ title, items }) => (
-              <div key={title} style={{ marginBottom: 22 }}>
+              <div
+                key={title}
+                className={title === 'Warranty & Status Checks' ? 'report-editor-page-break-before' : undefined}
+                style={{ marginBottom: 22 }}
+              >
                 <SubHeader title={title} color={C} />
                 <div className="report-editor-problem-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
                   {(items as [string, keyof ReportData][]).map(([lbl, k]) => (
@@ -858,7 +980,7 @@ export function ReportEditor() {
           </div>
 
           {/* ══ SAFETY FEATURES ══ */}
-          <div className="report-editor-section" style={{ ...sectionBox }}>
+          <div className="report-editor-section report-editor-page-break-before" style={{ ...sectionBox }}>
             <SectionHeader icon={ShieldCheck} title="Safety Features" color={C} />
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 0 }}>
               {([
@@ -872,7 +994,7 @@ export function ReportEditor() {
                     <div key={ci} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', paddingRight: ci < 2 ? 20 : 0, paddingLeft: ci > 0 ? 20 : 0, borderRight: ci < 2 ? '1px solid #f0f4f8' : 'none', gap: 8 }}>
                       {lbl && k ? (
                         <>
-                          <span style={{ fontSize: 13, color: '#64748b', flex: 1 }}>{lbl}</span>
+                          <span style={{ fontSize: 13, color: '#64748b', flex: 1, whiteSpace: 'nowrap' }}>{lbl}</span>
                           <EToggle value={data[k] as 'Equipped' | 'Not Equipped'} onChange={(v) => set(k as any, v)} color={C} />
                         </>
                       ) : null}
@@ -884,7 +1006,7 @@ export function ReportEditor() {
           </div>
 
           {/* ══ SECURITY FEATURES ══ */}
-          <div className="report-editor-section pdf-page-break" style={{ ...sectionBox }}>
+          <div className="report-editor-section" style={{ ...sectionBox }}>
             <SectionHeader icon={Lock} title="Security Features" color={C} />
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 0 }}>
               {([
@@ -911,7 +1033,7 @@ export function ReportEditor() {
           </div>
 
           {/* ══ AUDITING SUMMARY ══ */}
-          <div className="report-editor-section" style={{ ...sectionBox }}>
+          <div className="report-editor-section report-editor-page-break-before" style={{ ...sectionBox }}>
             <SectionHeader icon={CheckSquare} title="Auditing Summary & Conclusion" color={C} />
 
             <div style={{ background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)', border: '1.5px solid #e2e8f0', borderRadius: 14, padding: '20px 22px', marginBottom: 20 }}>

@@ -20,9 +20,29 @@ interface DashboardStats {
   completedReports: number;
 }
 
+function withTimeout<T>(promise: Promise<T>, label: string, timeoutMs = 12000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      reject(new Error(`${label} request timed out`));
+    }, timeoutMs);
+
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
 export function Dashboard() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [recentReports, setRecentReports] = useState<(Report & { brand?: Brand })[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
@@ -35,43 +55,47 @@ export function Dashboard() {
   useEffect(() => {
     if (user) {
       fetchDashboardData();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
   const fetchDashboardData = async () => {
     setLoading(true);
+    setError(null);
     try {
-      // Fetch brands
-      const { data: brandsData } = await supabase.from('brands').select('*').order('name');
-      setBrands(brandsData || []);
+      const [brandsResult, recentReportsResult, allReportsResult] = await Promise.all([
+        withTimeout(supabase.from('brands').select('*').order('name'), 'brands'),
+        withTimeout(
+          supabase.from('reports').select('*, brand:brands(*)').order('created_at', { ascending: false }).limit(5),
+          'recent reports'
+        ),
+        withTimeout(supabase.from('reports').select('status, created_at'), 'report stats'),
+      ]);
 
-      // Fetch reports with brand info
-      const { data: reportsData } = await supabase
-        .from('reports')
-        .select('*, brand:brands(*)')
-        .order('created_at', { ascending: false })
-        .limit(5);
+      if (brandsResult.error) throw brandsResult.error;
+      if (recentReportsResult.error) throw recentReportsResult.error;
+      if (allReportsResult.error) throw allReportsResult.error;
 
-      setRecentReports(reportsData || []);
+      setBrands(brandsResult.data || []);
+      setRecentReports(recentReportsResult.data || []);
 
-      // Fetch all reports for stats
-      const { data: allReports } = await supabase.from('reports').select('status, created_at');
-      if (allReports) {
-        const now = new Date();
-        const thisMonthCount = allReports.filter((r) => {
-          const date = new Date(r.created_at);
-          return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-        }).length;
+      const allReports = allReportsResult.data || [];
+      const now = new Date();
+      const thisMonthCount = allReports.filter((r) => {
+        const date = new Date(r.created_at);
+        return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      }).length;
 
-        setStats({
-          totalReports: allReports.length,
-          thisMonth: thisMonthCount,
-          draftReports: allReports.filter((r) => r.status === 'draft').length,
-          completedReports: allReports.filter((r) => r.status === 'completed').length,
-        });
-      }
+      setStats({
+        totalReports: allReports.length,
+        thisMonth: thisMonthCount,
+        draftReports: allReports.filter((r) => r.status === 'draft').length,
+        completedReports: allReports.filter((r) => r.status === 'completed').length,
+      });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      setError('We could not load the dashboard data right now. Please refresh and try again.');
     } finally {
       setLoading(false);
     }
@@ -108,16 +132,14 @@ export function Dashboard() {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
+      {error && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          {error}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

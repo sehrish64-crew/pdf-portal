@@ -310,11 +310,7 @@ export function ReportPdfPage() {
   }, [data, handleDownload, loading, report, searchParams]);
 
   if (loading || !report || !data) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500" />
-      </div>
-    );
+    return <div className="min-h-screen bg-slate-100" />;
   }
 
   const C = report.brand_color;
@@ -447,7 +443,7 @@ export function ReportPdfPage() {
       <div
         ref={reportRef}
         data-pdf-root="true"
-        className="pdf-document mx-auto overflow-hidden border border-slate-200 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.10)]"
+        className="pdf-document mx-auto flex flex-col overflow-hidden border border-slate-200 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.10)]"
       >
         <div
           className="relative overflow-hidden border-b border-slate-200 px-5 py-6 text-white sm:px-8 sm:py-8"
@@ -490,7 +486,7 @@ export function ReportPdfPage() {
           <StatCard label="Problem Checks" icon={AlertCircle} color={C} value={data.problemChecksCount} />
         </div>
 
-        <div className="space-y-8 p-5 sm:p-8">
+        <div className="flex-1 space-y-8 p-5 pb-[210px] sm:p-8 sm:pb-[210px]">
           <section className="pdf-page">
             <SectionTitle icon={ClipboardList} title="Executive Summary" color={C} />
             <div className="grid pdf-grid-2 gap-4">
@@ -578,6 +574,10 @@ export function ReportPdfPage() {
                     <FeatureLine label="Mileage" value={record.mileage || '---'} />
                     <FeatureLine label="Test Number" value={record.testNumber || '---'} />
                   </div>
+                  <div className="mt-4 border-t border-slate-200 pt-4">
+                    <div className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Advisories:</div>
+                    <p className="text-sm leading-7 text-slate-600">{record.advisorNote || '---'}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -639,28 +639,30 @@ export function ReportPdfPage() {
             </div>
           </section>
 
-          <footer className="pdf-page pdf-card rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-6 sm:p-7">
-            <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="text-sm font-bold tracking-[0.08em] text-slate-900 uppercase">Vehicle Inspector Report</div>
-                <div className="mt-1 text-xs leading-5 text-slate-500">
-                  Generated for {report.brand?.name || 'Vehicle Inspector'} on {searchDate}
+          <footer className="pdf-page absolute inset-x-0 bottom-0">
+            <div className="mx-5 mb-5 rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-6 shadow-sm sm:mx-8 sm:mb-8 sm:p-7">
+              <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="text-sm font-bold tracking-[0.08em] text-slate-900 uppercase">Vehicle Inspector Report</div>
+                  <div className="mt-1 text-xs leading-5 text-slate-500">
+                    Generated for {report.brand?.name || 'Vehicle Inspector'} on {searchDate}
+                  </div>
                 </div>
+                <div className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700">{data.securedBy}</div>
               </div>
-              <div className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700">{data.securedBy}</div>
-            </div>
-            <div className="mt-5 grid gap-4 text-xs text-slate-500 sm:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
-                <div className="font-semibold uppercase tracking-[0.12em] text-slate-400">Email</div>
-                <div className="mt-1 text-slate-700">{data.email}</div>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
-                <div className="font-semibold uppercase tracking-[0.12em] text-slate-400">Website</div>
-                <div className="mt-1 text-slate-700">{data.website}</div>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
-                <div className="font-semibold uppercase tracking-[0.12em] text-slate-400">Report ID</div>
-                <div className="mt-1 font-mono text-slate-700">CR-{report.id.slice(0, 6).toUpperCase()}</div>
+              <div className="mt-5 grid gap-4 text-xs text-slate-500 sm:grid-cols-3">
+                <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
+                  <div className="font-semibold uppercase tracking-[0.12em] text-slate-400">Email</div>
+                  <div className="mt-1 text-slate-700">{data.email}</div>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
+                  <div className="font-semibold uppercase tracking-[0.12em] text-slate-400">Website</div>
+                  <div className="mt-1 text-slate-700">{data.website}</div>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
+                  <div className="font-semibold uppercase tracking-[0.12em] text-slate-400">Report ID</div>
+                  <div className="mt-1 font-mono text-slate-700">CR-{report.id.slice(0, 6).toUpperCase()}</div>
+                </div>
               </div>
             </div>
           </footer>

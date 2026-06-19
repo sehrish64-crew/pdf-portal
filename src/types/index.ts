@@ -24,6 +24,7 @@ export interface MOTRecord {
   expiryDate: string;
   mileage: string;
   testNumber: string;
+  advisorNote: string;
 }
 
 export interface LegalCheck {

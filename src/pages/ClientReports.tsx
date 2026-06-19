@@ -17,10 +17,30 @@ import {
 } from 'lucide-react';
 import type { Report, Brand } from '../types';
 
+function withTimeout<T>(promise: Promise<T>, label: string, timeoutMs = 12000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      reject(new Error(`${label} request timed out`));
+    }, timeoutMs);
+
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
 export function ClientReports() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [reports, setReports] = useState<(Report & { brand?: Brand })[]>([]);
   const [filteredReports, setFilteredReports] = useState<(Report & { brand?: Brand })[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,17 +60,22 @@ export function ClientReports() {
 
   const fetchReports = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
-        .from('reports')
-        .select('*, brand:brands(*)')
-        .order('created_at', { ascending: false });
+      const { data, error } = await withTimeout(
+        supabase
+          .from('reports')
+          .select('*, brand:brands(*)')
+          .order('created_at', { ascending: false }),
+        'reports'
+      );
 
       if (error) throw error;
       setReports(data || []);
       setFilteredReports(data || []);
     } catch (error) {
       console.error('Error fetching reports:', error);
+      setError('We could not load reports right now. Please refresh and try again.');
     } finally {
       setLoading(false);
     }
@@ -98,6 +123,12 @@ export function ClientReports() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          {error}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -146,11 +177,7 @@ export function ClientReports() {
 
       {/* Reports Table */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-          </div>
-        ) : filteredReports.length === 0 ? (
+        {filteredReports.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center p-8">
             <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
             <p className="text-slate-500 dark:text-slate-400">

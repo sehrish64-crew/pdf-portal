@@ -37,6 +37,7 @@ export function NewReport() {
   const [model, setModel] = useState('');
   const [year, setYear] = useState('');
   const [mileage, setMileage] = useState('');
+  const [marketValue, setMarketValue] = useState('');
 
   useEffect(() => {
     if (!authLoading) {
@@ -104,6 +105,8 @@ export function NewReport() {
       const reportData = {
         securedBy: `Secured by ${brandName}`,
         tagline: 'One VIN. Complete History.',
+        marketValue: marketValue || '---',
+        marketValueSummary: `Market value is estimated at ${marketValue || '---'} with a Clear / Valid MOT.`,
       };
 
       const { data, error } = await supabase
@@ -386,6 +389,19 @@ export function NewReport() {
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Market Value
+              </label>
+              <input
+                type="text"
+                value={marketValue}
+                onChange={(e) => setMarketValue(e.target.value)}
+                placeholder="e.g., £12,500"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
         </div>
 
@@ -397,7 +413,7 @@ export function NewReport() {
           style={{ backgroundColor: brandColor }}
         >
           {loading ? (
-            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            'Creating...'
           ) : (
             <>
               Continue

@@ -38,6 +38,7 @@ export function createDefaultReportData(make?: string, model?: string, year?: nu
         expiryDate: today,
         mileage: currentMileage,
         testNumber: '---',
+        advisorNote: '',
       },
     ],
 
