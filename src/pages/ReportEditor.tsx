@@ -72,7 +72,7 @@ function EToggle({ value, onChange, color }: { value: 'Equipped' | 'Not Equipped
 function EBool({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
   return (
     <div onClick={() => onChange(!value)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', background: 'white', cursor: 'pointer', gap: 8, userSelect: 'none' }}>
-      <span style={{ fontSize: 11, color: '#64748b', lineHeight: 1.3 }}>{label}</span>
+      <span style={{ fontSize: 11, color: '#7a7a7a', lineHeight: 1.3 }}>{label}</span>
       <span style={{ fontSize: 11, fontWeight: 700, color: value ? '#ef4444' : '#16a34a', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 3 }}>
         {value
           ? <><svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round"/></svg> Yes</>
@@ -101,8 +101,8 @@ function StatusBadge({ status, onChange }: { status: string; onChange: (v: strin
 function SectionHeader({ icon: Icon, title, color }: { icon: React.ElementType; title: string; color: string }) {
   return (
     <div className="report-editor-section-header" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-      <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg, ${color}25, ${color}10)`, border: `1.5px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Icon size={18} color={color} />
+      <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(145deg, ${mixHex(color, '#ffffff', 0.18)} 0%, ${color} 58%, ${mixHex(color, '#0f172a', 0.16)} 100%)`, border: `1.5px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Icon size={18} color="#ffffff" strokeWidth={2.2} />
       </div>
       <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', margin: 0, letterSpacing: '-0.01em' }}>{title}</h2>
     </div>
@@ -123,7 +123,7 @@ function SubHeader({ title, color }: { title: string; color: string }) {
 function DataRow({ label, value, last = false }: { label: string; value: React.ReactNode; last?: boolean }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 0', borderBottom: last ? 'none' : '1px solid #f1f5f9' }}>
-      <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 400 }}>{label}</span>
+      <span style={{ fontSize: 13, color: '#7a7a7a', fontWeight: 400 }}>{label}</span>
       <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', textAlign: 'right', maxWidth: '60%' }}>{value}</span>
     </div>
   );
@@ -132,6 +132,49 @@ function DataRow({ label, value, last = false }: { label: string; value: React.R
 // ─── Two Column Row ───────────────────────────────────────────────────────────
 function TwoCol({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return <div className={`report-editor-two-col ${className}`.trim()} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>{children}</div>;
+}
+
+function hexToRgb(hex: string) {
+  const normalized = hex.replace('#', '').trim();
+  const value = normalized.length === 3
+    ? normalized.split('').map((char) => char + char).join('')
+    : normalized;
+
+  if (!/^[0-9a-fA-F]{6}$/.test(value)) return null;
+
+  return {
+    r: Number.parseInt(value.slice(0, 2), 16),
+    g: Number.parseInt(value.slice(2, 4), 16),
+    b: Number.parseInt(value.slice(4, 6), 16),
+  };
+}
+
+function mixHex(baseHex: string, mixHexColor: string, amount: number) {
+  const base = hexToRgb(baseHex);
+  const mix = hexToRgb(mixHexColor);
+  if (!base || !mix) return baseHex;
+
+  const mixAmount = Math.min(1, Math.max(0, amount));
+  const channel = (start: number, end: number) => Math.round(start + (end - start) * mixAmount);
+  return `#${[channel(base.r, mix.r), channel(base.g, mix.g), channel(base.b, mix.b)]
+    .map((value) => value.toString(16).padStart(2, '0'))
+    .join('')}`;
+}
+
+function buildBrandTheme(color: string) {
+  const base = hexToRgb(color) ? color : '#3B82F6';
+  const light = mixHex(base, '#ffffff', 0.2);
+  const dark = mixHex(base, '#0f172a', 0.16);
+  return {
+    base,
+    light,
+    dark,
+    cover: `linear-gradient(135deg, ${light} 0%, ${base} 52%, ${dark} 100%)`,
+    icon: `linear-gradient(145deg, ${light} 0%, ${base} 58%, ${dark} 100%)`,
+    chip: `linear-gradient(135deg, ${light}22 0%, ${base}18 100%)`,
+    soft: `linear-gradient(180deg, ${light}14 0%, ${dark}10 100%)`,
+    footer: `linear-gradient(135deg, ${light}12, ${dark}0a)`,
+  };
 }
 
 // ─── Main ReportEditor ────────────────────────────────────────────────────────
@@ -199,6 +242,7 @@ export function ReportEditor() {
   }
 
   const C = report.brand_color;
+  const brandTheme = buildBrandTheme(C);
   const reportId = `CR-${report.id.slice(0, 6).toUpperCase()}`;
   const searchDate = data.searchDate || new Date(report.created_at).toLocaleDateString('en-GB');
 
@@ -221,7 +265,7 @@ export function ReportEditor() {
       <style>{`
         @page {
           size: A4 portrait;
-          margin: 8mm 9mm 14mm 9mm;
+          margin: 10px;
         }
 
         @media print {
@@ -264,8 +308,8 @@ export function ReportEditor() {
           }
 
           .report-editor-page .report-editor-document {
-            width: auto !important;
-            max-width: calc(210mm - 18mm) !important;
+            width: 100% !important;
+            max-width: none !important;
             margin: 0 !important;
             border-radius: 0 !important;
             box-shadow: none !important;
@@ -278,8 +322,7 @@ export function ReportEditor() {
             display: block !important;
             flex: none !important;
             min-height: auto !important;
-            padding: 12px 14px 16px !important;
-            padding-bottom: 16px !important;
+            padding: 0 !important;
           }
 
           .report-editor-page .report-editor-document > .flex-1.space-y-8 > :not([hidden]) ~ :not([hidden]) {
@@ -326,7 +369,7 @@ export function ReportEditor() {
           }
 
           .report-editor-page .report-editor-cover {
-            padding: 18px 20px 20px !important;
+            padding: 18px 18px 20px !important;
           }
 
           .report-editor-page .report-editor-stat-grid > div {
@@ -611,7 +654,7 @@ export function ReportEditor() {
           </button>
           <button onClick={() => handleSave('completed')} disabled={saving}
             className="flex items-center gap-2 px-4 py-2.5 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 shadow-lg"
-            style={{ background: `linear-gradient(135deg, ${C}, ${C}cc)`, boxShadow: `0 4px 14px ${C}40` }}>
+            style={{ background: brandTheme.soft, boxShadow: `0 4px 14px ${brandTheme.base}40` }}>
             <CheckCircle className="w-4 h-4" />Complete
           </button>
           <button onClick={handleExportPDF}
@@ -630,7 +673,7 @@ export function ReportEditor() {
         <div className="report-editor-document" style={{ width: '100%', maxWidth: 794, margin: '0 auto', background: 'white', borderRadius: 20, overflow: 'hidden', boxShadow: '0 0 0 1px #e2e8f0, 0 20px 60px rgba(0,0,0,0.08)', boxSizing: 'border-box', ...docStyle }}>
 
           {/* ══ COVER HEADER ══ */}
-          <div className="report-editor-cover" style={{ background: `linear-gradient(135deg, ${C} 0%, ${C}dd 100%)`, padding: '32px 36px 36px', position: 'relative', overflow: 'hidden' }}>
+          <div className="report-editor-cover" style={{ background: brandTheme.cover, padding: '32px 36px 36px', position: 'relative', overflow: 'hidden', borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
             {/* Decorative circles */}
             <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(0,0,0,0.15)' }} />
             <div style={{ position: 'absolute', top: 20, right: 60, width: 60, height: 60, borderRadius: '50%', background: 'rgba(0,0,0,0.08)' }} />
@@ -651,7 +694,7 @@ export function ReportEditor() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1 }}>
                 <div style={{ width: 3, height: 20, background: 'rgba(255,255,255,0.7)', borderRadius: 2 }} />
                 <div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Report ID</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.8)', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Report ID</div>
                   <div style={{ fontSize: 13, color: 'white', fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
                     <E value={reportId} onChange={() => {}} className="text-white" style={{ color: 'white', fontFamily: 'monospace' }} />
                   </div>
@@ -660,9 +703,9 @@ export function ReportEditor() {
             </div>
 
             {/* Official badge */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 14px', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 99, marginBottom: 20 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 14px', background: brandTheme.chip, border: `1px solid ${brandTheme.light}40`, borderRadius: 99, marginBottom: 20 }}>
               <CheckSquare size={12} color="rgba(255,255,255,0.8)" />
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: 500, letterSpacing: '0.02em' }}>Official Vehicle History Audit Report | Comprehensive &amp; Detailed</span>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.92)', fontWeight: 500, letterSpacing: '0.02em' }}>Official Vehicle History Audit Report | Comprehensive &amp; Detailed</span>
             </div>
 
             {/* Vehicle Name */}
@@ -691,8 +734,8 @@ export function ReportEditor() {
               ].map(({ label, icon: Icon, val, key }, i) => (
                 <div key={i} style={{ paddingRight: i < 3 ? 20 : 0, borderRight: i < 3 ? '1px solid rgba(255,255,255,0.15)' : 'none', paddingLeft: i > 0 ? 20 : 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
-                    <Icon size={11} color="rgba(255,255,255,0.6)" />
-                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{label}</span>
+                    <Icon size={11} color="#ffffff" strokeWidth={2.2} />
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.82)', fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{label}</span>
                   </div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: 'white', letterSpacing: '-0.01em' }}>
                     {key === 'searchDate'
@@ -715,13 +758,13 @@ export function ReportEditor() {
               { key: 'problemChecksCount' as const, val: data.problemChecksCount, label: 'Problem Checks', icon: AlertCircle },
             ].map(({ key, val, label, icon: Icon }, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'center', padding: '20px 8px', borderRight: i < 5 ? '1px solid #f0f4f8' : 'none' }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg, ${C}18, ${C}08)`, border: `1.5px solid ${C}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-                  <Icon size={16} color={C} />
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: brandTheme.icon, border: `1.5px solid ${C}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+                  <Icon size={16} color="#ffffff" strokeWidth={2.2} />
                 </div>
                 <span style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', lineHeight: 1, marginBottom: 4 }}>
                   <E value={String(val)} onChange={(v) => updateNumericField(key, v)} style={{ color: '#0f172a' }} />
                 </span>
-                <span style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center', fontWeight: 500, letterSpacing: '0.02em' }}>{label}</span>
+                <span style={{ fontSize: 10, color: '#7a7a7a', textAlign: 'center', fontWeight: 500, letterSpacing: '0.02em' }}>{label}</span>
               </div>
             ))}
           </div>
@@ -746,7 +789,7 @@ export function ReportEditor() {
             </TwoCol>
 
             {/* Great News Banner */}
-            <div style={{ marginTop: 20, display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 18px', background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', border: '1.5px solid #86efac', borderRadius: 12 }}>
+            <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, padding: '14px 18px', background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', border: '1.5px solid #86efac', borderRadius: 12 }}>
               <div style={{ width: 28, height: 28, borderRadius: 8, background: 'white', border: '2px solid #22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
                 <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7l3.5 3.5L12 3" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
               </div>
@@ -775,7 +818,7 @@ export function ReportEditor() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{ width: 4, height: 20, background: C, borderRadius: 2 }} />
                       <div>
-                        <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, marginBottom: 1 }}>{label}</div>
+                        <div style={{ fontSize: 11, color: '#7a7a7a', fontWeight: 500, marginBottom: 1 }}>{label}</div>
                         <Icon size={11} color="#cbd5e1" />
                       </div>
                     </div>
@@ -795,7 +838,7 @@ export function ReportEditor() {
                   <div className="report-editor-mot-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 10 }}>
                     {([['Year', 'year'], ['Result', 'result'], ['Date of Test', 'dateOfTest'], ['Expiry Date', 'expiryDate'], ['Mileage', 'mileage']] as [string, keyof MOTRecord][]).map(([lbl, k]) => (
                       <div key={k} style={{ background: 'white', borderRadius: 10, padding: '10px 12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-                        <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>{lbl}</div>
+                        <div style={{ fontSize: 9, color: '#7a7a7a', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>{lbl}</div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: k === 'result' ? (m[k] === 'PASSED' ? '#16a34a' : '#dc2626') : '#1e293b' }}>
                           <E value={m[k]} onChange={(v) => updateMOT(idx, k, v)} style={{ color: k === 'result' ? (m[k] === 'PASSED' ? '#16a34a' : '#dc2626') : '#1e293b' }} />
                         </div>
@@ -805,14 +848,14 @@ export function ReportEditor() {
               
                   <div className="report-editor-mot-meta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ background: 'white', borderRadius: 8, padding: '8px 12px', border: '1px solid #e2e8f0', display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Test Number</span>
+                      <span style={{ fontSize: 10, color: '#7a7a7a', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Test Number</span>
                       <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', fontFamily: 'monospace' }}>
                         <E value={m.testNumber} onChange={(v) => updateMOT(idx, 'testNumber', v)} style={{ fontFamily: 'monospace', color: '#475569' }} />
                       </span>
                     </div>
                   </div>
                   <div style={{ background: 'white', borderRadius: 10, padding: '10px 12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', marginTop: 10, marginBottom: 10 }}>
-                    <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>Advisories:</div>
+                    <div style={{ fontSize: 9, color: '#7a7a7a', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>Advisories:</div>
                     <textarea
                       value={m.advisorNote || ''}
                       onChange={(e) => updateMOT(idx, 'advisorNote', e.target.value)}
@@ -863,7 +906,7 @@ export function ReportEditor() {
               ] as [string, keyof ReportData, string | null, (keyof ReportData) | null][]).map(([l1, k1, l2, k2], ri) => (
                 <React.Fragment key={ri}>
                   <div style={{ padding: '11px 0', paddingRight: 24, borderBottom: '1px solid #f8fafc', borderRight: '1px solid #f0f4f8', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 400 }}>{l1}</span>
+                    <span style={{ fontSize: 13, color: '#7a7a7a', fontWeight: 400 }}>{l1}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
                       {k1 === 'motStatus'
                         ? <span style={{ background: '#dcfce7', color: '#15803d', padding: '3px 12px', borderRadius: 99, fontSize: 11, fontWeight: 700, border: '1px solid #bbf7d0' }}><E value={editableText(data[k1])} onChange={(v) => set(k1, v as never)} style={{ color: '#15803d' }} /></span>
@@ -871,7 +914,7 @@ export function ReportEditor() {
                     </span>
                   </div>
                   <div style={{ padding: '11px 0', paddingLeft: 24, borderBottom: '1px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    {k2 && <><span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 400 }}>{l2}</span><span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}><E value={editableText(data[k2])} onChange={(v) => set(k2!, v as never)} /></span></>}
+                    {k2 && <><span style={{ fontSize: 13, color: '#7a7a7a', fontWeight: 400 }}>{l2}</span><span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}><E value={editableText(data[k2])} onChange={(v) => set(k2!, v as never)} /></span></>}
                   </div>
                 </React.Fragment>
               ))}
@@ -904,11 +947,11 @@ export function ReportEditor() {
               ] as [string, keyof ReportData, string, keyof ReportData][]).map(([l1, k1, l2, k2], ri) => (
                 <React.Fragment key={ri}>
                   <div style={{ padding: '11px 0', paddingRight: 24, borderBottom: '1px solid #f8fafc', borderRight: '1px solid #f0f4f8', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 13, color: '#94a3b8' }}>{l1}</span>
+                    <span style={{ fontSize: 13, color: '#7a7a7a' }}>{l1}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}><E value={editableText(data[k1])} onChange={(v) => set(k1, v as never)} /></span>
                   </div>
                   <div style={{ padding: '11px 0', paddingLeft: 24, borderBottom: '1px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 13, color: '#94a3b8' }}>{l2}</span>
+                    <span style={{ fontSize: 13, color: '#7a7a7a' }}>{l2}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}><E value={editableText(data[k2])} onChange={(v) => set(k2, v as never)} /></span>
                   </div>
                 </React.Fragment>
@@ -926,11 +969,11 @@ export function ReportEditor() {
               ] as [string, keyof ReportData, string, keyof ReportData][]).map(([l1, k1, l2, k2], ri) => (
                 <React.Fragment key={ri}>
                   <div style={{ padding: '11px 0', paddingRight: 24, borderBottom: ri === 0 ? '1px solid #f8fafc' : 'none', borderRight: '1px solid #f0f4f8', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 13, color: '#94a3b8' }}>{l1}</span>
+                    <span style={{ fontSize: 13, color: '#7a7a7a' }}>{l1}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}><E value={editableText(data[k1])} onChange={(v) => set(k1, v as never)} /></span>
                   </div>
                   <div style={{ padding: '11px 0', paddingLeft: 24, borderBottom: ri === 0 ? '1px solid #f8fafc' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 13, color: '#94a3b8' }}>{l2}</span>
+                    <span style={{ fontSize: 13, color: '#7a7a7a' }}>{l2}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}><E value={editableText(data[k2])} onChange={(v) => set(k2, v as never)} /></span>
                   </div>
                 </React.Fragment>
@@ -973,8 +1016,8 @@ export function ReportEditor() {
                 <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5L8.5 2" stroke="#15803d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
                 No Active Campaigns Found
               </span>
-              <p style={{ fontSize: 13, color: '#64748b', margin: 0, lineHeight: 1.6 }}>
-                <E value={data.recallsMessage} onChange={(v) => set('recallsMessage', v)} multiline style={{ color: '#64748b' }} />
+              <p style={{ fontSize: 13, color: '#7a7a7a', margin: 0, lineHeight: 1.6 }}>
+                <E value={data.recallsMessage} onChange={(v) => set('recallsMessage', v)} multiline style={{ color: '#7a7a7a' }} />
               </p>
             </div>
           </div>
@@ -994,7 +1037,7 @@ export function ReportEditor() {
                     <div key={ci} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', paddingRight: ci < 2 ? 20 : 0, paddingLeft: ci > 0 ? 20 : 0, borderRight: ci < 2 ? '1px solid #f0f4f8' : 'none', gap: 8 }}>
                       {lbl && k ? (
                         <>
-                          <span style={{ fontSize: 13, color: '#64748b', flex: 1, whiteSpace: 'nowrap' }}>{lbl}</span>
+                          <span style={{ fontSize: 13, color: '#7a7a7a', flex: 1, whiteSpace: 'nowrap' }}>{lbl}</span>
                           <EToggle value={data[k] as 'Equipped' | 'Not Equipped'} onChange={(v) => set(k as any, v)} color={C} />
                         </>
                       ) : null}
@@ -1021,7 +1064,7 @@ export function ReportEditor() {
                     <div key={ci} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', paddingRight: ci === 0 ? 28 : 0, paddingLeft: ci > 0 ? 28 : 0, borderRight: ci === 0 ? '1px solid #f0f4f8' : 'none', gap: 8 }}>
                       {lbl && k ? (
                         <>
-                          <span style={{ fontSize: 13, color: '#64748b' }}>{lbl}</span>
+                          <span style={{ fontSize: 13, color: '#7a7a7a' }}>{lbl}</span>
                           <EToggle value={data[k] as 'Equipped' | 'Not Equipped'} onChange={(v) => set(k as any, v)} color={C} />
                         </>
                       ) : null}
@@ -1055,15 +1098,15 @@ export function ReportEditor() {
             {/* Disclaimer */}
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, alignItems: 'flex-start' }}>
               <AlertCircle size={13} color="#94a3b8" style={{ flexShrink: 0, marginTop: 2 }} />
-              <p style={{ fontSize: 11, color: '#94a3b8', margin: 0, lineHeight: 1.7, fontStyle: 'italic' }}>
+              <p style={{ fontSize: 11, color: '#7a7a7a', margin: 0, lineHeight: 1.7, fontStyle: 'italic' }}>
                 <span style={{ fontWeight: 600 }}>Disclaimer: </span>
-                <E value={data.disclaimerText} onChange={(v) => set('disclaimerText', v)} multiline style={{ color: '#94a3b8' }} />
+                <E value={data.disclaimerText} onChange={(v) => set('disclaimerText', v)} multiline style={{ color: '#7a7a7a' }} />
               </p>
             </div>
 
             {/* Contact */}
             <div style={{ textAlign: 'center', padding: '12px', background: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0' }}>
-              <p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>
+              <p style={{ fontSize: 11, color: '#7a7a7a', margin: 0 }}>
                 Email: <E value={data.email} onChange={(v) => set('email', v)} style={{ color: '#3b82f6', textDecoration: 'underline' }} /> &nbsp;|&nbsp; Website:{' '}
                 <E value={data.website} onChange={(v) => set('website', v)} style={{ color: '#3b82f6', textDecoration: 'underline' }} />
               </p>
@@ -1071,7 +1114,7 @@ export function ReportEditor() {
           </div>
 
           {/* ══ FOOTER ══ */}
-          <div className="report-editor-footer" style={{ padding: '18px 36px', background: `linear-gradient(135deg, ${C}08, ${C}04)`, borderTop: `2px solid ${C}20`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="report-editor-footer" style={{ padding: '18px 36px', background: brandTheme.footer, borderTop: `2px solid ${brandTheme.base}20`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             {/* Logo */}
             <div style={{ background: 'white', borderRadius: 12, padding: '6px 12px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 60, minHeight: 42, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
               {report.logo_url
@@ -1079,11 +1122,11 @@ export function ReportEditor() {
                 : <Car size={18} color={C} />}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#94a3b8' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#7a7a7a' }}>
               <div style={{ width: 14, height: 14, borderRadius: 3, border: '1.5px solid #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1 4l2 2L7 1" stroke="#94a3b8" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+                <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1 4l2 2L7 1" stroke="#7a7a7a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
               </div>
-              <E value={data.tagline} onChange={(v) => set('tagline', v)} style={{ color: '#94a3b8' }} />
+              <E value={data.tagline} onChange={(v) => set('tagline', v)} style={{ color: '#7a7a7a' }} />
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, fontWeight: 700, color: C }}>
