@@ -1,0 +1,240 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-900;
+  }
+
+  * {
+    @apply border-slate-200 dark:border-slate-700;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50;
+  }
+
+  .card {
+    @apply bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all;
+  }
+
+  .select {
+    @apply w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer;
+  }
+
+  .textarea {
+    @apply w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none;
+  }
+
+  .badge {
+    @apply inline-flex px-2.5 py-1 text-xs font-medium rounded-full;
+  }
+
+  .badge-success {
+    @apply bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400;
+  }
+
+  .badge-warning {
+    @apply bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400;
+  }
+
+  .badge-error {
+    @apply bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400;
+  }
+}
+
+@layer utilities {
+  .pdf-document {
+    width: 306mm;
+    min-height: 297mm;
+    background: #ffffff;
+    box-sizing: border-box;
+  }
+
+  .pdf-page {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .pdf-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .pdf-grid-stats {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .pdf-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pdf-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .pdf-grid-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.slate.300') transparent;
+  }
+
+  .dark .scrollbar-thin {
+    scrollbar-color: theme('colors.slate.600') transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-600 rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400 dark:bg-slate-500;
+  }
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* No print — hidden during PDF export via JS */
+.no-print {
+  display: block;
+}
+
+/* Explicit PDF page break support */
+.pdf-page-break {
+  page-break-before: always;
+  break-before: page;
+}
+
+/* Editable field hover indicator */
+[contenteditable]:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.4);
+  border-radius: 3px;
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Report document font */
+.report-doc {
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Editable fields show subtle underline on hover */
+[contenteditable]:not(:focus):hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  border-radius: 3px;
+  cursor: text;
+}
+@media print {
+  .badge {
+    width: 140px !important;
+    white-space: nowrap !important;
+  }
+}
+
+.pdf-export-clone,
+.pdf-export-clone * {
+  box-sizing: border-box;
+}
+
+.pdf-export-clone .no-print {
+  display: none !important;
+}
+
+.pdf-export-clone .sm\:flex-row,
+.pdf-export-clone .md\:flex-row,
+.pdf-export-clone .lg\:flex-row,
+.pdf-export-clone .xl\:flex-row {
+  flex-direction: row !important;
+}
+
+.pdf-export-clone .sm\:grid-cols-2,
+.pdf-export-clone .md\:grid-cols-2,
+.pdf-export-clone .lg\:grid-cols-2,
+.pdf-export-clone .xl\:grid-cols-2,
+.pdf-export-clone .sm\:grid-cols-3,
+.pdf-export-clone .md\:grid-cols-3,
+.pdf-export-clone .lg\:grid-cols-3,
+.pdf-export-clone .xl\:grid-cols-3,
+.pdf-export-clone .sm\:grid-cols-4,
+.pdf-export-clone .md\:grid-cols-4,
+.pdf-export-clone .lg\:grid-cols-4,
+.pdf-export-clone .xl\:grid-cols-4,
+.pdf-export-clone .sm\:grid-cols-5,
+.pdf-export-clone .md\:grid-cols-5,
+.pdf-export-clone .lg\:grid-cols-5,
+.pdf-export-clone .xl\:grid-cols-5,
+.pdf-export-clone .sm\:grid-cols-6,
+.pdf-export-clone .md\:grid-cols-6,
+.pdf-export-clone .lg\:grid-cols-6,
+.pdf-export-clone .xl\:grid-cols-6 {
+  grid-template-columns: inherit !important;
+}
