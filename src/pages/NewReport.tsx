@@ -12,6 +12,7 @@ import {
   Hash,
   Calendar,
   Gauge,
+  MapPin,
 } from 'lucide-react';
 import type { Brand, ReportType, PackageType } from '../types';
 
@@ -21,6 +22,7 @@ export function NewReport() {
   const [loading, setLoading] = useState(false);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [brandsLoading, setBrandsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Form fields
   const [selectedBrand, setSelectedBrand] = useState<string>('');
@@ -64,7 +66,23 @@ export function NewReport() {
       const { data, error } = await supabase.from('brands').select('*').order('name');
       if (error) throw error;
 
-      const brandList = data || [];
+      const brandList: Brand[] = [...(data || [])];
+      const hasAutoScanOra = brandList.some(
+        (brand) => brand.name.toLowerCase() === 'autoscanora'
+      );
+
+      if (!hasAutoScanOra) {
+        brandList.push({
+          id: 'autoscanora',
+          name: 'AutoScanOra',
+          slug: 'autoscanora',
+          default_color: '#2563EB',
+          email: 'info@autoscanora.com',
+          website: 'https://autoscanora.com/',
+          created_at: new Date().toISOString(),
+        });
+      }
+
       setBrands(brandList);
 
       if (brandList.length > 0) {
@@ -84,6 +102,23 @@ export function NewReport() {
     }
   };
 
+  const uploadLogoFile = async (file: File) => {
+    try {
+      const filePath = `logos/${Date.now()}_${file.name}`;
+      const bucket = 'brand-logos';
+      const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, file, { upsert: true });
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        return null;
+      }
+      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+      return data?.publicUrl || null;
+    } catch (err) {
+      console.error('Upload failed', err);
+      return null;
+    }
+  };
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -97,17 +132,47 @@ export function NewReport() {
   };
 
   const handleContinue = async () => {
-    if (!selectedBrand) return;
+    if (!selectedBrand) {
+      setErrorMessage('Please select a brand');
+      return;
+    }
+
+    if (!make.trim() || !model.trim()) {
+      setErrorMessage('Make and model are required');
+      return;
+    }
 
     setLoading(true);
+    setErrorMessage('');
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setErrorMessage('You must be logged in');
+        return;
+      }
 
       const selectedBrandObj = brands.find((b) => b.id === selectedBrand);
+      if (!selectedBrandObj) {
+        setErrorMessage('Selected brand not found');
+        return;
+      }
+
+      const isUuid = (value: string) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+      const resolvedBrandId = isUuid(selectedBrand)
+        ? selectedBrand
+        : brands.find((b) => isUuid(b.id))?.id || null;
+
+      if (!resolvedBrandId) {
+        setErrorMessage('No valid brand available for this report');
+        return;
+      }
+
       const brandName = selectedBrandObj?.name || 'Vehicle Inspector';
+
+      // Create normal report
       const reportData = {
         securedBy: `Secured by ${brandName}`,
         tagline: 'One VIN. Complete History.',
@@ -121,7 +186,7 @@ export function NewReport() {
         .from('reports')
         .insert({
           user_id: user.id,
-          brand_id: selectedBrand,
+          brand_id: resolvedBrandId,
           report_type: reportType,
           package_type: packageType,
           vin_number: reportType === 'VIN' ? vinNumber : null,
@@ -139,11 +204,15 @@ export function NewReport() {
         .select()
         .single();
 
-      if (error) throw error;
-
+      if (error) {
+        console.error('Report creation error:', error);
+        throw new Error(error.message || 'Failed to create report');
+      }
       navigate(`/dashboard/report/${data.id}`);
     } catch (error) {
       console.error('Error creating report:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Failed to create report';
+      setErrorMessage(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -153,11 +222,18 @@ export function NewReport() {
     <div className="w-full max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">New Vehicle Report</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">New Report</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
           Create a new inspection report with dynamic branding
         </p>
       </div>
+
+      {/* Error Message */}
+      {errorMessage && (
+        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-4 text-red-700 dark:text-red-400 text-sm">
+          {errorMessage}
+        </div>
+      )}
 
       {/* Form */}
       <div className="space-y-6">
@@ -218,6 +294,35 @@ export function NewReport() {
             </div>
           </div>
 
+          {/* Brand Contact Info */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Brand Email
+              </label>
+              <input
+                type="email"
+                value={brandEmail}
+                onChange={(e) => setBrandEmail(e.target.value)}
+                placeholder="info@example.com"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Brand Website
+              </label>
+              <input
+                type="url"
+                value={brandWebsite}
+                onChange={(e) => setBrandWebsite(e.target.value)}
+                placeholder="https://example.com/"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
           {/* Logo Upload */}
           <div className="mt-6">
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -246,177 +351,180 @@ export function NewReport() {
           </div>
         </div>
 
-        {/* Report Type & Package */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-500" />
-            Report Configuration
-          </h2>
+        {/* Report Configuration */}
+        <>
+          {/* Report Type & Package */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 sm:p-6">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-500" />
+              Report Configuration
+            </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Report Type */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Report Type
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {(['VIN', 'Plate'] as ReportType[]).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setReportType(type)}
-                    className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
-                      reportType === type
-                        ? 'text-white shadow-lg'
-                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                    }`}
-                    style={reportType === type ? { backgroundColor: brandColor } : undefined}
-                  >
-                    {type} Report
-                  </button>
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Report Type */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Report Type
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {(['VIN', 'Plate'] as ReportType[]).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setReportType(type)}
+                      className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+                        reportType === type
+                          ? 'text-white shadow-lg'
+                          : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                      }`}
+                      style={reportType === type ? { backgroundColor: brandColor } : undefined}
+                    >
+                      {type} Report
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Package Type */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                <Package className="w-4 h-4 inline mr-1" />
-                Package Type
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {(['Basic', 'Standard', 'Premium'] as PackageType[]).map((pkg) => (
-                  <button
-                    key={pkg}
-                    onClick={() => setPackageType(pkg)}
-                    className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
-                      packageType === pkg
-                        ? 'text-white shadow-lg'
-                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                    }`}
-                    style={packageType === pkg ? { backgroundColor: brandColor } : undefined}
-                  >
-                    {pkg}
-                  </button>
-                ))}
+              {/* Package Type */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <Package className="w-4 h-4 inline mr-1" />
+                  Package Type
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {(['Basic', 'Standard', 'Premium'] as PackageType[]).map((pkg) => (
+                    <button
+                      key={pkg}
+                      onClick={() => setPackageType(pkg)}
+                      className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+                        packageType === pkg
+                          ? 'text-white shadow-lg'
+                          : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                      }`}
+                      style={packageType === pkg ? { backgroundColor: brandColor } : undefined}
+                    >
+                      {pkg}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Vehicle Details */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <Car className="w-5 h-5 text-blue-500" />
-            Vehicle Details
-          </h2>
+          {/* Vehicle Details */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 sm:p-6">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Car className="w-5 h-5 text-blue-500" />
+              Vehicle Details
+            </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {reportType === 'VIN' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {reportType === 'VIN' ? (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <Hash className="w-4 h-4 inline mr-1" />
+                    VIN Number
+                  </label>
+                  <input
+                    type="text"
+                    value={vinNumber}
+                    onChange={(e) => setVinNumber(e.target.value)}
+                    placeholder="Enter VIN number"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <Hash className="w-4 h-4 inline mr-1" />
+                    Plate Number
+                  </label>
+                  <input
+                    type="text"
+                    value={plateNumber}
+                    onChange={(e) => setPlateNumber(e.target.value)}
+                    placeholder="Enter plate number"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  <Hash className="w-4 h-4 inline mr-1" />
-                  VIN Number
+                  Make
                 </label>
                 <input
                   type="text"
-                  value={vinNumber}
-                  onChange={(e) => setVinNumber(e.target.value)}
-                  placeholder="Enter VIN number"
+                  value={make}
+                  onChange={(e) => setMake(e.target.value)}
+                  placeholder="e.g., Toyota"
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-            ) : (
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  <Hash className="w-4 h-4 inline mr-1" />
-                  Plate Number
+                  Model
                 </label>
                 <input
                   type="text"
-                  value={plateNumber}
-                  onChange={(e) => setPlateNumber(e.target.value)}
-                  placeholder="Enter plate number"
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  placeholder="e.g., Camry"
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-            )}
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Make
-              </label>
-              <input
-                type="text"
-                value={make}
-                onChange={(e) => setMake(e.target.value)}
-                placeholder="e.g., Toyota"
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <Calendar className="w-4 h-4 inline mr-1" />
+                  Year
+                </label>
+                <input
+                  type="number"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  placeholder="e.g., 2023"
+                  min="1900"
+                  max={new Date().getFullYear() + 1}
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Model
-              </label>
-              <input
-                type="text"
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                placeholder="e.g., Camry"
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <Gauge className="w-4 h-4 inline mr-1" />
+                  Mileage
+                </label>
+                <input
+                  type="number"
+                  value={mileage}
+                  onChange={(e) => setMileage(e.target.value)}
+                  placeholder="e.g., 50000"
+                  min="0"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                <Calendar className="w-4 h-4 inline mr-1" />
-                Year
-              </label>
-              <input
-                type="number"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                placeholder="e.g., 2023"
-                min="1900"
-                max={new Date().getFullYear() + 1}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                <Gauge className="w-4 h-4 inline mr-1" />
-                Mileage
-              </label>
-              <input
-                type="number"
-                value={mileage}
-                onChange={(e) => setMileage(e.target.value)}
-                placeholder="e.g., 50000"
-                min="0"
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Market Value
-              </label>
-              <input
-                type="text"
-                value={marketValue}
-                onChange={(e) => setMarketValue(e.target.value)}
-                placeholder="e.g., £12,500"
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Market Value
+                </label>
+                <input
+                  type="text"
+                  value={marketValue}
+                  onChange={(e) => setMarketValue(e.target.value)}
+                  placeholder="e.g., £12,500"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
           </div>
-        </div>
+        </>
 
         {/* Continue Button */}
         <button
           onClick={handleContinue}
-          disabled={loading || !selectedBrand}
+          disabled={loading || !selectedBrand || !make.trim() || !model.trim()}
           className="w-full flex items-center justify-center gap-2 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4 text-sm sm:text-base text-white font-semibold rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl"
           style={{ backgroundColor: brandColor }}
         >

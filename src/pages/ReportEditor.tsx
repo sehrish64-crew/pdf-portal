@@ -39,15 +39,15 @@ function EToggle({ value, onChange, color }: { value: 'Equipped' | 'Not Equipped
   const eq = value === 'Equipped';
   return (
     <button className="report-editor-print-toggle" onClick={() => onChange(eq ? 'Not Equipped' : 'Equipped')}
-      style={{ 
-        backgroundColor: eq ? color + '18' : '#f8fafc', 
-        color: eq ? color : '#94a3b8', 
-        border: `1.5px solid ${eq ? color + '50' : '#e2e8f0'}`, 
-        padding: '4px 4px', 
-        borderRadius: 99, 
-        fontSize: 10, 
-        fontWeight: 600, 
-        letterSpacing: '0.02em', 
+      style={{
+        backgroundColor: eq ? color + '18' : '#f8fafc',
+        color: eq ? color : '#94a3b8',
+        border: `1.5px solid ${eq ? color + '50' : '#e2e8f0'}`,
+        padding: '4px 4px',
+        borderRadius: 99,
+        fontSize: 10,
+        fontWeight: 600,
+        letterSpacing: '0.02em',
         cursor: 'pointer',
         // CRITICAL: Text centering for PDF
         display: 'inline-flex',
@@ -75,8 +75,8 @@ function EBool({ label, value, onChange }: { label: string; value: boolean; onCh
       <span style={{ fontSize: 11, color: '#7a7a7a', lineHeight: 1.3 }}>{label}</span>
       <span style={{ fontSize: 11, fontWeight: 700, color: value ? '#ef4444' : '#16a34a', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 3 }}>
         {value
-          ? <><svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round"/></svg> Yes</>
-          : <><svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5L8.5 2" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> No</>
+          ? <><svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" /></svg> Yes</>
+          : <><svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5L8.5 2" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> No</>
         }
       </span>
     </div>
@@ -90,8 +90,8 @@ function StatusBadge({ status, onChange }: { status: string; onChange: (v: strin
     <span onClick={() => onChange(ok ? 'Records Found' : 'No Records Found')}
       style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 99, fontSize: 11, fontWeight: 700, cursor: 'pointer', backgroundColor: ok ? '#dcfce7' : '#fee2e2', color: ok ? '#15803d' : '#dc2626', border: `1px solid ${ok ? '#bbf7d0' : '#fecaca'}`, whiteSpace: 'nowrap' }}>
       {ok
-        ? <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5L8.5 2" stroke="#15803d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        : <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="#dc2626" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+        ? <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5L8.5 2" stroke="#15803d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        : <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="#dc2626" strokeWidth="1.5" strokeLinecap="round" /></svg>}
       {status}
     </span>
   );
@@ -669,7 +669,7 @@ export function ReportEditor() {
       </p>
 
       {/* ══════ REPORT DOCUMENT ══════ */}
-      <div ref={reportRef} style={{paddingBottom: 40 }}>
+      <div ref={reportRef} style={{ paddingBottom: 40 }}>
         <div className="report-editor-document" style={{ width: '100%', maxWidth: 794, margin: '0 auto', background: 'white', borderRadius: 20, overflow: 'hidden', boxShadow: '0 0 0 1px #e2e8f0, 0 20px 60px rgba(0,0,0,0.08)', boxSizing: 'border-box', ...docStyle }}>
 
           {/* ══ COVER HEADER ══ */}
@@ -686,9 +686,9 @@ export function ReportEditor() {
                 {report.logo_url
                   ? <img src={report.logo_url} alt="Logo" style={{ maxHeight: 44, maxWidth: 110, objectFit: 'contain' }} />
                   : <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Car size={22} color={C} />
-                      <span style={{ fontWeight: 800, fontSize: 14, color: C }}>{report.brand?.name?.slice(0, 3).toUpperCase()}</span>
-                    </div>}
+                    <Car size={22} color={C} />
+                    <span style={{ fontWeight: 800, fontSize: 14, color: C }}>{report.brand?.name?.slice(0, 3).toUpperCase()}</span>
+                  </div>}
               </div>
               {/* Report ID */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1 }}>
@@ -696,7 +696,7 @@ export function ReportEditor() {
                 <div>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.8)', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Report ID</div>
                   <div style={{ fontSize: 13, color: 'white', fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-                    <E value={reportId} onChange={() => {}} className="text-white" style={{ color: 'white', fontFamily: 'monospace' }} />
+                    <E value={reportId} onChange={() => { }} className="text-white" style={{ color: 'white', fontFamily: 'monospace' }} />
                   </div>
                 </div>
               </div>
@@ -791,7 +791,7 @@ export function ReportEditor() {
             {/* Great News Banner */}
             <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, padding: '14px 18px', background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', border: '1.5px solid #86efac', borderRadius: 12 }}>
               <div style={{ width: 28, height: 28, borderRadius: 8, background: 'white', border: '2px solid #22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7l3.5 3.5L12 3" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+                <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7l3.5 3.5L12 3" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" /></svg>
               </div>
               <p style={{ fontSize: 13, color: '#166534', margin: 0, lineHeight: 1.6 }}>
                 <strong>Great News!</strong>{' '}
@@ -845,7 +845,7 @@ export function ReportEditor() {
                       </div>
                     ))}
                   </div>
-              
+
                   <div className="report-editor-mot-meta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ background: 'white', borderRadius: 8, padding: '8px 12px', border: '1px solid #e2e8f0', display: 'inline-flex', gap: 8, alignItems: 'center' }}>
                       <span style={{ fontSize: 10, color: '#7a7a7a', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Test Number</span>
@@ -986,11 +986,11 @@ export function ReportEditor() {
             <SectionHeader icon={Tag} title="Title Brand & Problem Checks (Comprehensive)" color={C} />
 
             {[
-              { title: 'Damage & Salvage Checks', items: [['Flood Damage','floodDamage'],['Fire Damage','fireDamage'],['Hail Damage','hailDamage'],['Junk','junkTitle'],['Totaled','totaled'],['Salvage','salvage'],['Former Rental','formerRental']] },
-              { title: 'Title History Checks', items: [['Prior Taxi','priorTaxi'],['Odometer Not Actual','odometerNotActual'],['Vandalism','vandalism'],['Rebuilt','rebuilt'],['Dismantled','dismantled'],['Collision','collision'],['Prior Police','priorPolice']] },
-              { title: 'Warranty & Status Checks', items: [['Warranty Return','warrantyReturn'],['Parts Only','partsOnly'],['Recovered Theft','recoveredTheft'],['Undisclosed Lien','undisclosedLien'],['Antique / Classic','antiqueClassic'],['Agricultural Vehicle','agriculturalVehicle'],['Reissued VIN','reissuedVIN']] },
-              { title: 'Safety & Defect Checks', items: [['Manufacturer Buy Back','manufacturerBuyBack'],['Salvage / Stolen','salvageStolen'],['Crushed','crushed'],['Inoperable Vehicle','inoperableVehicle'],['Hazardous','hazardous'],['Export Only Vehicle','exportOnlyVehicle'],['Odometer Tampering','odometerTampering'],['Gray Market','grayMarket']] },
-              { title: 'Odometer & Discrepancy Checks', items: [['Odometer Exceeds Limits','odometerExceedsLimits'],['Odometer Altered','odometerAltered'],['Odometer Replaced','odometerReplaced'],['Odometer Discrepancy','odometerDiscrepancy'],['Pending Junk','pendingJunk'],['Junk Automobile','junkAutomobile']] },
+              { title: 'Damage & Salvage Checks', items: [['Flood Damage', 'floodDamage'], ['Fire Damage', 'fireDamage'], ['Hail Damage', 'hailDamage'], ['Junk', 'junkTitle'], ['Totaled', 'totaled'], ['Salvage', 'salvage'], ['Former Rental', 'formerRental']] },
+              { title: 'Title History Checks', items: [['Prior Taxi', 'priorTaxi'], ['Odometer Not Actual', 'odometerNotActual'], ['Vandalism', 'vandalism'], ['Rebuilt', 'rebuilt'], ['Dismantled', 'dismantled'], ['Collision', 'collision'], ['Prior Police', 'priorPolice']] },
+              { title: 'Warranty & Status Checks', items: [['Warranty Return', 'warrantyReturn'], ['Parts Only', 'partsOnly'], ['Recovered Theft', 'recoveredTheft'], ['Undisclosed Lien', 'undisclosedLien'], ['Antique / Classic', 'antiqueClassic'], ['Agricultural Vehicle', 'agriculturalVehicle'], ['Reissued VIN', 'reissuedVIN']] },
+              { title: 'Safety & Defect Checks', items: [['Manufacturer Buy Back', 'manufacturerBuyBack'], ['Salvage / Stolen', 'salvageStolen'], ['Crushed', 'crushed'], ['Inoperable Vehicle', 'inoperableVehicle'], ['Hazardous', 'hazardous'], ['Export Only Vehicle', 'exportOnlyVehicle'], ['Odometer Tampering', 'odometerTampering'], ['Gray Market', 'grayMarket']] },
+              { title: 'Odometer & Discrepancy Checks', items: [['Odometer Exceeds Limits', 'odometerExceedsLimits'], ['Odometer Altered', 'odometerAltered'], ['Odometer Replaced', 'odometerReplaced'], ['Odometer Discrepancy', 'odometerDiscrepancy'], ['Pending Junk', 'pendingJunk'], ['Junk Automobile', 'junkAutomobile']] },
             ].map(({ title, items }) => (
               <div
                 key={title}
@@ -1013,7 +1013,7 @@ export function ReportEditor() {
                 <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>Recalls Section</span>
               </div>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 12px', borderRadius: 99, fontSize: 11, fontWeight: 700, background: '#dcfce7', color: '#15803d', border: '1px solid #bbf7d0', width: 'fit-content' }}>
-                <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5L8.5 2" stroke="#15803d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+                <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5L8.5 2" stroke="#15803d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" /></svg>
                 No Active Campaigns Found
               </span>
               <p style={{ fontSize: 13, color: '#7a7a7a', margin: 0, lineHeight: 1.6 }}>
@@ -1027,10 +1027,10 @@ export function ReportEditor() {
             <SectionHeader icon={ShieldCheck} title="Safety Features" color={C} />
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 0 }}>
               {([
-                [['Front Airbags','frontAirbags'],['Side Airbags','sideAirbags'],['Side Curtain Airbags','sideCurtainAirbags']],
-                [['ABS','abs'],['Braking Assist','brakingAssist'],['Electronic Brakeforce Distribution','electronicBrakeforceDistribution']],
-                [['Active Head Restraints','activeHeadRestraints'],['Child Safety Door Locks','childSafetyDoorLocks'],['Child Seat Anchors','childSeatAnchors']],
-                [['Crumple Zones','crumpleZones'],['Emergency Interior Trunk Release','emergencyInteriorTrunkRelease'],['','']],
+                [['Front Airbags', 'frontAirbags'], ['Side Airbags', 'sideAirbags'], ['Side Curtain Airbags', 'sideCurtainAirbags']],
+                [['ABS', 'abs'], ['Braking Assist', 'brakingAssist'], ['Electronic Brakeforce Distribution', 'electronicBrakeforceDistribution']],
+                [['Active Head Restraints', 'activeHeadRestraints'], ['Child Safety Door Locks', 'childSafetyDoorLocks'], ['Child Seat Anchors', 'childSeatAnchors']],
+                [['Crumple Zones', 'crumpleZones'], ['Emergency Interior Trunk Release', 'emergencyInteriorTrunkRelease'], ['', '']],
               ] as [string, keyof ReportData][][]).map((row, ri) => (
                 <div key={ri} className="report-editor-safety-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: ri < 3 ? '1px solid #f0f4f8' : 'none' }}>
                   {row.map(([lbl, k], ci) => (
@@ -1053,11 +1053,11 @@ export function ReportEditor() {
             <SectionHeader icon={Lock} title="Security Features" color={C} />
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 0 }}>
               {([
-                [['Hill Holder Control','hillHolderControl'],['Stability Control','stabilityControl']],
-                [['Traction Control','tractionControl'],['Anti-Theft System','antiTheftSystem']],
-                [['Power Door Locks','powerDoorLocks'],['Front Seatbelts','frontSeatbelts']],
-                [['Rear Seatbelts','rearSeatbelts'],['Seatbelt Pretensioners','seatbeltPretensioners']],
-                [['Seatbelt Warning Sensor','seatbeltWarningSensor'],['','']],
+                [['Hill Holder Control', 'hillHolderControl'], ['Stability Control', 'stabilityControl']],
+                [['Traction Control', 'tractionControl'], ['Anti-Theft System', 'antiTheftSystem']],
+                [['Power Door Locks', 'powerDoorLocks'], ['Front Seatbelts', 'frontSeatbelts']],
+                [['Rear Seatbelts', 'rearSeatbelts'], ['Seatbelt Pretensioners', 'seatbeltPretensioners']],
+                [['Seatbelt Warning Sensor', 'seatbeltWarningSensor'], ['', '']],
               ] as [string, keyof ReportData][][]).map((row, ri) => (
                 <div key={ri} className="report-editor-security-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: ri < 4 ? '1px solid #f0f4f8' : 'none' }}>
                   {row.map(([lbl, k], ci) => (
@@ -1124,14 +1124,14 @@ export function ReportEditor() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#7a7a7a' }}>
               <div style={{ width: 14, height: 14, borderRadius: 3, border: '1.5px solid #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1 4l2 2L7 1" stroke="#7a7a7a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+                <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1 4l2 2L7 1" stroke="#7a7a7a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" /></svg>
               </div>
               <E value={data.tagline} onChange={(v) => set('tagline', v)} style={{ color: '#7a7a7a' }} />
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, fontWeight: 700, color: C }}>
               <div style={{ width: 14, height: 14, borderRadius: 3, border: `1.5px solid ${C}60`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1 4l2 2L7 1" stroke={C} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+                <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1 4l2 2L7 1" stroke={C} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" /></svg>
               </div>
               <E value={data.securedBy} onChange={(v) => set('securedBy', v)} style={{ color: C }} />
             </div>
