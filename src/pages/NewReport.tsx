@@ -83,6 +83,22 @@ export function NewReport() {
         });
       }
 
+      const hasAutoFactsCheck = brandList.some(
+        (brand) => brand.name.toLowerCase() === 'autofactscheck'
+      );
+
+      if (!hasAutoFactsCheck) {
+        brandList.push({
+          id: 'autofactscheck',
+          name: 'AutoFactsCheck',
+          slug: 'autofactscheck',
+          default_color: '#92400E',
+          email: 'info@autofactscheck.com',
+          website: 'https://autofactscheck.com/',
+          created_at: new Date().toISOString(),
+        });
+      }
+
       setBrands(brandList);
 
       if (brandList.length > 0) {
