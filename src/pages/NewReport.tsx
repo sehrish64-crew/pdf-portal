@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { createDefaultReportData } from '../lib/defaultReportData';
+import { getLocalReports, saveLocalReport } from '../lib/localReports';
 import {
   ArrowRight,
   Car,
@@ -12,17 +12,16 @@ import {
   Hash,
   Calendar,
   Gauge,
-  MapPin,
 } from 'lucide-react';
 import type { Brand, ReportType, PackageType } from '../types';
 
 export function NewReport() {
   const navigate = useNavigate();
-  const { loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [brandsLoading, setBrandsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [savedCount, setSavedCount] = useState(() => getLocalReports().length);
 
   // Form fields
   const [selectedBrand, setSelectedBrand] = useState<string>('');
@@ -44,10 +43,8 @@ export function NewReport() {
   const [marketValue, setMarketValue] = useState('');
 
   useEffect(() => {
-    if (!authLoading) {
-      fetchBrands();
-    }
-  }, [authLoading]);
+    fetchBrands();
+  }, []);
 
   useEffect(() => {
     if (selectedBrand && brands.length > 0) {
@@ -62,77 +59,105 @@ export function NewReport() {
 
   const fetchBrands = async () => {
     setBrandsLoading(true);
-    try {
-      const { data, error } = await supabase.from('brands').select('*').order('name');
-      if (error) throw error;
+    const brandList: Brand[] = [
+      {
+        id: 'autoscanora',
+        name: 'AutoScanOra',
+        slug: 'autoscanora',
+        default_color: '#2563EB',
+        email: 'info@autoscanora.com',
+        website: 'https://autoscanora.com/',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'autofactscheck',
+        name: 'AutoFactsCheck',
+        slug: 'autofactscheck',
+        default_color: '#92400E',
+        email: 'info@autofactscheck.com',
+        website: 'https://autofactscheck.com/',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'carreaders',
+        name: 'CarReaders',
+        slug: 'carreaders',
+        default_color: '#3B82F6',
+        email: 'info@carreaders.com',
+        website: 'https://carreaders.com/',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'vehiclehealthanalysis',
+        name: 'VehicleHealthAnalysis',
+        slug: 'vehiclehealthanalysis',
+        default_color: '#10B981',
+        email: 'info@vehiclehealthanalysis.com',
+        website: 'https://vehiclehealthanalysis.com/',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'vehiclehealthestimate',
+        name: 'VehicleHealthEstimate',
+        slug: 'vehiclehealthestimate',
+        default_color: '#F59E0B',
+        email: 'info@vehiclehealthestimate.com',
+        website: 'https://vehiclehealthestimate.com/',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'carbronze',
+        name: 'CarBronze',
+        slug: 'carbronze',
+        default_color: '#92400E',
+        email: 'info@carbronze.com',
+        website: 'https://carbronze.com/',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'trueanalyzers',
+        name: 'TrueAnalyzers',
+        slug: 'trueanalyzers',
+        default_color: '#8B5CF6',
+        email: 'info@trueanalyzers.com',
+        website: 'https://trueanalyzers.com/',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'trueinspectify',
+        name: 'TrueInspectify',
+        slug: 'trueinspectify',
+        default_color: '#EC4899',
+        email: 'info@trueinspectify.com',
+        website: 'https://trueinspectify.com/',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'trueinfoprovider',
+        name: 'TrueInfoProvider',
+        slug: 'trueinfoprovider',
+        default_color: '#06B6D4',
+        email: 'info@trueinfoprovider.com',
+        website: 'https://trueinfoprovider.com/',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'cardefiner',
+        name: 'CarDefiner',
+        slug: 'cardefiner',
+        default_color: '#EF4444',
+        email: 'info@cardefiner.com',
+        website: 'https://cardefiner.com/',
+        created_at: new Date().toISOString(),
+      },
+    ];
 
-      const brandList: Brand[] = [...(data || [])];
-      const hasAutoScanOra = brandList.some(
-        (brand) => brand.name.toLowerCase() === 'autoscanora'
-      );
-
-      if (!hasAutoScanOra) {
-        brandList.push({
-          id: 'autoscanora',
-          name: 'AutoScanOra',
-          slug: 'autoscanora',
-          default_color: '#2563EB',
-          email: 'info@autoscanora.com',
-          website: 'https://autoscanora.com/',
-          created_at: new Date().toISOString(),
-        });
-      }
-
-      const hasAutoFactsCheck = brandList.some(
-        (brand) => brand.name.toLowerCase() === 'autofactscheck'
-      );
-
-      if (!hasAutoFactsCheck) {
-        brandList.push({
-          id: 'autofactscheck',
-          name: 'AutoFactsCheck',
-          slug: 'autofactscheck',
-          default_color: '#92400E',
-          email: 'info@autofactscheck.com',
-          website: 'https://autofactscheck.com/',
-          created_at: new Date().toISOString(),
-        });
-      }
-
-      setBrands(brandList);
-
-      if (brandList.length > 0) {
-        setSelectedBrand(brandList[0].id);
-        setBrandColor(brandList[0].default_color);
-        setBrandEmail(brandList[0].email || 'info@example.com');
-        setBrandWebsite(brandList[0].website || 'https://example.com/');
-      } else {
-        setSelectedBrand('');
-      }
-    } catch (error) {
-      console.error('Error fetching brands:', error);
-      setBrands([]);
-      setSelectedBrand('');
-    } finally {
-      setBrandsLoading(false);
-    }
-  };
-
-  const uploadLogoFile = async (file: File) => {
-    try {
-      const filePath = `logos/${Date.now()}_${file.name}`;
-      const bucket = 'brand-logos';
-      const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, file, { upsert: true });
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        return null;
-      }
-      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-      return data?.publicUrl || null;
-    } catch (err) {
-      console.error('Upload failed', err);
-      return null;
-    }
+    setBrands(brandList);
+    setSelectedBrand(brandList[0].id);
+    setBrandColor(brandList[0].default_color);
+    setBrandEmail(brandList[0].email || 'info@example.com');
+    setBrandWebsite(brandList[0].website || 'https://example.com/');
+    setBrandsLoading(false);
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,35 +186,22 @@ export function NewReport() {
     setLoading(true);
     setErrorMessage('');
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setErrorMessage('You must be logged in');
-        return;
-      }
-
       const selectedBrandObj = brands.find((b) => b.id === selectedBrand);
       if (!selectedBrandObj) {
         setErrorMessage('Selected brand not found');
         return;
       }
 
-      const isUuid = (value: string) =>
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-      const resolvedBrandId = isUuid(selectedBrand)
-        ? selectedBrand
-        : brands.find((b) => isUuid(b.id))?.id || null;
-
-      if (!resolvedBrandId) {
-        setErrorMessage('No valid brand available for this report');
-        return;
-      }
-
       const brandName = selectedBrandObj?.name || 'Vehicle Inspector';
-
-      // Create normal report
       const reportData = {
+        ...createDefaultReportData(
+          make,
+          model,
+          year ? Number.parseInt(year, 10) : undefined,
+          mileage ? Number.parseInt(mileage, 10) : undefined,
+          plateNumber,
+          vinNumber,
+        ),
         securedBy: `Secured by ${brandName}`,
         tagline: 'One VIN. Complete History.',
         email: brandEmail,
@@ -198,33 +210,33 @@ export function NewReport() {
         marketValueSummary: `Market value is estimated at ${marketValue || '---'} with a Clear / Valid MOT.`,
       };
 
-      const { data, error } = await supabase
-        .from('reports')
-        .insert({
-          user_id: user.id,
-          brand_id: resolvedBrandId,
-          report_type: reportType,
-          package_type: packageType,
-          vin_number: reportType === 'VIN' ? vinNumber : null,
-          plate_number: reportType === 'Plate' ? plateNumber : null,
-          make,
-          model,
-          year: year ? parseInt(year) : null,
-          mileage: mileage ? parseInt(mileage) : null,
-          brand_color: brandColor,
-          logo_url: logoUrl || null,
-          report_data: reportData,
-          vehicle_name: make && model ? `${make} ${model}` : null,
-          status: 'draft',
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Report creation error:', error);
-        throw new Error(error.message || 'Failed to create report');
-      }
-      navigate(`/dashboard/report/${data.id}`);
+      const reportId = crypto.randomUUID();
+      const now = new Date().toISOString();
+      saveLocalReport({
+        id: reportId,
+        user_id: 'local-user',
+        brand_id: selectedBrandObj.id,
+        brand: selectedBrandObj,
+        report_type: reportType,
+        package_type: packageType,
+        vin_number: reportType === 'VIN' ? vinNumber : null,
+        plate_number: reportType === 'Plate' ? plateNumber : null,
+        make,
+        model,
+        year: year ? Number.parseInt(year, 10) : null,
+        mileage: mileage ? Number.parseInt(mileage, 10) : null,
+        brand_color: brandColor,
+        logo_url: logoUrl || null,
+        report_data: reportData,
+        client_name: null,
+        vehicle_name: `${make} ${model}`,
+        overall_score: null,
+        status: 'draft',
+        created_at: now,
+        updated_at: now,
+      });
+      setSavedCount(getLocalReports().length);
+      navigate(`/report/${reportId}`);
     } catch (error) {
       console.error('Error creating report:', error);
       const errorMsg = error instanceof Error ? error.message : 'Failed to create report';
@@ -237,11 +249,20 @@ export function NewReport() {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">New Report</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">
-          Create a new inspection report with dynamic branding
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">New Report</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Create a new inspection report with dynamic branding
+          </p>
+        </div>
+        <Link
+          to="/reports"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+        >
+          <FileText className="h-4 w-4" />
+          Saved Reports ({savedCount})
+        </Link>
       </div>
 
       {/* Error Message */}

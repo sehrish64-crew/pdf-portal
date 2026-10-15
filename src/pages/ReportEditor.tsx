@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 import { createDefaultReportData } from '../lib/defaultReportData';
+import { getLocalReport, saveLocalReport } from '../lib/localReports';
 import {
   Save, Download, ArrowLeft, CheckCircle, Plus, Trash2, FileText,
   AlertTriangle, RotateCcw, Tag, TrendingDown, AlertCircle, Car,
@@ -9,6 +9,13 @@ import {
   Calendar, Info, CheckSquare, Fuel,
 } from 'lucide-react';
 import type { Report, ReportData, MOTRecord } from '../types';
+
+type BooleanReportDataKey = {
+  [Key in keyof ReportData]: ReportData[Key] extends boolean ? Key : never;
+}[keyof ReportData];
+type EquipmentReportDataKey = {
+  [Key in keyof ReportData]: ReportData[Key] extends 'Equipped' | 'Not Equipped' ? Key : never;
+}[keyof ReportData];
 
 // ─── Inline Editable Text ────────────────────────────────────────────────────
 function E({
@@ -187,20 +194,36 @@ export function ReportEditor() {
   const [report, setReport] = useState<Report | null>(null);
   const [data, setData] = useState<ReportData | null>(null);
 
-  useEffect(() => { if (id) fetchReport(); }, [id]);
-
-  const fetchReport = async () => {
+  useEffect(() => {
+    if (!id) return;
     setLoading(true);
     try {
-      const { data: row, error } = await supabase.from('reports').select('*, brand:brands(*)').eq('id', id).single();
-      if (error) throw error;
+      const row = getLocalReport(id);
+      if (!row) throw new Error('Report not found');
       if (row) {
         setReport(row);
         const def = createDefaultReportData(row.make ?? undefined, row.model ?? undefined, row.year ?? undefined, row.mileage ?? undefined, row.plate_number ?? undefined, row.vin_number ?? undefined);
         setData({ ...def, ...row.report_data });
       }
-    } catch { navigate('/dashboard'); } finally { setLoading(false); }
-  };
+    } catch {
+      navigate('/', { replace: true });
+    } finally {
+      setLoading(false);
+    }
+  }, [id, navigate]);
+
+  useEffect(() => {
+    if (!report || !data) return;
+    try {
+      saveLocalReport({
+        ...report,
+        report_data: data,
+        updated_at: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Error saving report locally:', error);
+    }
+  }, [report, data]);
 
   const set = useCallback(<K extends keyof ReportData>(key: K, value: ReportData[K]) => {
     setData((prev) => prev ? { ...prev, [key]: value } : prev);
@@ -210,8 +233,15 @@ export function ReportEditor() {
     if (!report || !data) return;
     setSaving(true);
     try {
-      await supabase.from('reports').update({ report_data: data, status: status || report.status, vehicle_name: report.make && report.model ? `${report.make} ${report.model}` : null }).eq('id', report.id);
-      if (status) setReport({ ...report, status });
+      const updatedReport = {
+        ...report,
+        report_data: data,
+        status: status || report.status,
+        vehicle_name: report.make && report.model ? `${report.make} ${report.model}` : null,
+        updated_at: new Date().toISOString(),
+      };
+      saveLocalReport(updatedReport);
+      setReport(updatedReport);
     } catch (e) { console.error(e); } finally { setSaving(false); }
   };
 
@@ -639,7 +669,7 @@ export function ReportEditor() {
       {/* ── Toolbar ── */}
       <div className="report-editor-toolbar print-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm mb-4">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/dashboard/reports')} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          <button onClick={() => navigate('/reports')} title="Back to saved reports" className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
             <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
           </button>
           <div>
@@ -1000,7 +1030,7 @@ export function ReportEditor() {
                 <SubHeader title={title} color={C} />
                 <div className="report-editor-problem-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
                   {(items as [string, keyof ReportData][]).map(([lbl, k]) => (
-                    <EBool key={k} label={lbl} value={data[k] as boolean} onChange={(v) => set(k, v as any)} />
+                    <EBool key={k} label={lbl} value={data[k] as boolean} onChange={(v) => set(k as BooleanReportDataKey, v)} />
                   ))}
                 </div>
               </div>
@@ -1038,7 +1068,7 @@ export function ReportEditor() {
                       {lbl && k ? (
                         <>
                           <span style={{ fontSize: 13, color: '#7a7a7a', flex: 1, whiteSpace: 'nowrap' }}>{lbl}</span>
-                          <EToggle value={data[k] as 'Equipped' | 'Not Equipped'} onChange={(v) => set(k as any, v)} color={C} />
+                          <EToggle value={data[k] as 'Equipped' | 'Not Equipped'} onChange={(v) => set(k as EquipmentReportDataKey, v)} color={C} />
                         </>
                       ) : null}
                     </div>
@@ -1065,7 +1095,7 @@ export function ReportEditor() {
                       {lbl && k ? (
                         <>
                           <span style={{ fontSize: 13, color: '#7a7a7a' }}>{lbl}</span>
-                          <EToggle value={data[k] as 'Equipped' | 'Not Equipped'} onChange={(v) => set(k as any, v)} color={C} />
+                          <EToggle value={data[k] as 'Equipped' | 'Not Equipped'} onChange={(v) => set(k as EquipmentReportDataKey, v)} color={C} />
                         </>
                       ) : null}
                     </div>

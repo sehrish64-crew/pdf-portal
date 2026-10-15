@@ -17,13 +17,13 @@ import {
 } from 'lucide-react';
 import type { Report, Brand } from '../types';
 
-function withTimeout<T>(promise: Promise<T>, label: string, timeoutMs = 12000): Promise<T> {
+function withTimeout<T>(promise: PromiseLike<T>, label: string, timeoutMs = 12000): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = window.setTimeout(() => {
       reject(new Error(`${label} request timed out`));
     }, timeoutMs);
 
-    promise.then(
+    Promise.resolve(promise).then(
       (value) => {
         window.clearTimeout(timer);
         resolve(value);
@@ -39,7 +39,6 @@ function withTimeout<T>(promise: Promise<T>, label: string, timeoutMs = 12000): 
 export function ClientReports() {
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reports, setReports] = useState<(Report & { brand?: Brand })[]>([]);
   const [filteredReports, setFilteredReports] = useState<(Report & { brand?: Brand })[]>([]);
@@ -59,7 +58,6 @@ export function ClientReports() {
   }, [searchQuery, brandFilter, reports]);
 
   const fetchReports = async () => {
-    setLoading(true);
     setError(null);
     try {
       const { data, error } = await withTimeout(
@@ -76,8 +74,6 @@ export function ClientReports() {
     } catch (error) {
       console.error('Error fetching reports:', error);
       setError('We could not load reports right now. Please refresh and try again.');
-    } finally {
-      setLoading(false);
     }
   };
 

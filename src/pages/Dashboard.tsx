@@ -20,13 +20,13 @@ interface DashboardStats {
   completedReports: number;
 }
 
-function withTimeout<T>(promise: Promise<T>, label: string, timeoutMs = 12000): Promise<T> {
+function withTimeout<T>(promise: PromiseLike<T>, label: string, timeoutMs = 12000): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = window.setTimeout(() => {
       reject(new Error(`${label} request timed out`));
     }, timeoutMs);
 
-    promise.then(
+    Promise.resolve(promise).then(
       (value) => {
         window.clearTimeout(timer);
         resolve(value);
@@ -41,7 +41,6 @@ function withTimeout<T>(promise: Promise<T>, label: string, timeoutMs = 12000): 
 
 export function Dashboard() {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [recentReports, setRecentReports] = useState<(Report & { brand?: Brand })[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -55,13 +54,10 @@ export function Dashboard() {
   useEffect(() => {
     if (user) {
       fetchDashboardData();
-    } else {
-      setLoading(false);
     }
   }, [user]);
 
   const fetchDashboardData = async () => {
-    setLoading(true);
     setError(null);
     try {
       const [brandsResult, recentReportsResult, allReportsResult] = await Promise.all([
@@ -96,8 +92,6 @@ export function Dashboard() {
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       setError('We could not load the dashboard data right now. Please refresh and try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
