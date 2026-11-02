@@ -26,8 +26,8 @@ export function NewReport() {
   // Form fields
   const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [brandColor, setBrandColor] = useState('#3B82F6');
-  const [brandEmail, setBrandEmail] = useState('info@example.com');
-  const [brandWebsite, setBrandWebsite] = useState('https://example.com/');
+  const [brandEmail, setBrandEmail] = useState('');
+  const [brandWebsite, setBrandWebsite] = useState('');
   const [reportType, setReportType] = useState<ReportType>('VIN');
   const [packageType, setPackageType] = useState<PackageType>('Standard');
   const [logoUrl, setLogoUrl] = useState<string>('');
@@ -51,8 +51,8 @@ export function NewReport() {
       const brand = brands.find((b) => b.id === selectedBrand);
       if (brand) {
         setBrandColor(brand.default_color);
-        setBrandEmail(brand.email || 'info@example.com');
-        setBrandWebsite(brand.website || 'https://example.com/');
+        setBrandEmail(brand.email || '');
+        setBrandWebsite(brand.website || '');
       }
     }
   }, [selectedBrand, brands]);
@@ -96,13 +96,27 @@ export function NewReport() {
         website: 'https://carintelcheck.com/',
         created_at: new Date().toISOString(),
       },
+      {
+        id: 'checkmyvehicle',
+        name: 'CheckMyVehicle',
+        slug: 'checkmyvehicle',
+        default_color: '#7C3AED',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'irish-auto-insights',
+        name: 'Irish Auto Insights',
+        slug: 'irish-auto-insights',
+        default_color: '#059669',
+        created_at: new Date().toISOString(),
+      },
     ];
 
     setBrands(brandList);
     setSelectedBrand(brandList[0].id);
     setBrandColor(brandList[0].default_color);
-    setBrandEmail(brandList[0].email || 'info@example.com');
-    setBrandWebsite(brandList[0].website || 'https://example.com/');
+    setBrandEmail(brandList[0].email || '');
+    setBrandWebsite(brandList[0].website || '');
     setBrandsLoading(false);
   };
 
