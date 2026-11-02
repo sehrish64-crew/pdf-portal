@@ -97,17 +97,12 @@ export function NewReport() {
         created_at: new Date().toISOString(),
       },
       {
-        id: 'checkmyvehicle',
-        name: 'CheckMyVehicle',
-        slug: 'checkmyvehicle',
-        default_color: '#7C3AED',
-        created_at: new Date().toISOString(),
-      },
-      {
         id: 'irish-auto-insights',
-        name: 'Irish Auto Insights',
+        name: 'IrishAutoInsights',
         slug: 'irish-auto-insights',
         default_color: '#059669',
+        email: 'info@irishautoinsights.com',
+        website: 'https://irishautoinsights.com/',
         created_at: new Date().toISOString(),
       },
     ];
@@ -368,11 +363,10 @@ export function NewReport() {
                     <button
                       key={type}
                       onClick={() => setReportType(type)}
-                      className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
-                        reportType === type
+                      className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${reportType === type
                           ? 'text-white shadow-lg'
                           : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                      }`}
+                        }`}
                       style={reportType === type ? { backgroundColor: brandColor } : undefined}
                     >
                       {type} Report
@@ -392,11 +386,10 @@ export function NewReport() {
                     <button
                       key={pkg}
                       onClick={() => setPackageType(pkg)}
-                      className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
-                        packageType === pkg
+                      className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${packageType === pkg
                           ? 'text-white shadow-lg'
                           : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                      }`}
+                        }`}
                       style={packageType === pkg ? { backgroundColor: brandColor } : undefined}
                     >
                       {pkg}
