@@ -97,6 +97,15 @@ export function NewReport() {
         created_at: new Date().toISOString(),
       },
       {
+        id: 'vancheckers',
+        name: 'VanCheckers',
+        slug: 'vancheckers',
+        default_color: '#189EDD',
+        email: 'info@vancheckers.com',
+        website: 'https://vancheckers.com/',
+        created_at: new Date().toISOString(),
+      },
+      {
         id: 'irish-auto-insights',
         name: 'IrishAutoInsights',
         slug: 'irish-auto-insights',
